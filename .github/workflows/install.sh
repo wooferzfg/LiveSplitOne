@@ -1,14 +1,8 @@
 set -ex
 
 main() {
-    local target=
-    if [ "$OS_NAME" = "ubuntu-latest" ]; then
-        target=x86_64-unknown-linux-musl
-        sort=sort
-    else
-        target=x86_64-apple-darwin
-        sort=gsort
-    fi
+    local target=x86_64-unknown-linux-musl
+    local sort=sort
 
     cd $HOME
     git -C binaryen pull || git clone https://github.com/WebAssembly/binaryen binaryen

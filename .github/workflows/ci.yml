@@ -15,3 +15,14 @@ jobs:
     steps:
     - name: Checkout Commit
       uses: actions/checkout@v1
+
+    - name: Use Node 12
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - name: Install Dependencies
+      run: |
+        set -e
+        sh .github/workflows/install.sh
+        source ~/.cargo/env || true

@@ -54,14 +54,14 @@ jobs:
         source ~/.cargo/env || true
     
     - name: Build Application
-      run: bash ci/build.sh
+      run: bash .github/workflows/build.sh
     
     - name: Deploy Application
       # if: startsWith(github.ref, 'refs/tags/')
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
-        git checkout -b gh-pages
+        git checkout -b gh-pages --no-track
         mv dist/* .
         git add :/
         git commit -m "GitHub Pages build"

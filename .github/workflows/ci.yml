@@ -52,3 +52,17 @@ jobs:
         set -e
         sh .github/workflows/install.sh
         source ~/.cargo/env || true
+    
+    - name: Build Application
+      run: bash ci/build.sh
+    
+    - name: Deploy Application
+      # if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        git checkout -b gh-pages
+        mv dist/* .
+        git add :/
+        git commit -m "GitHub Pages build"
+        git push --force https://action:${{ secrets.LIVESPLIT_ONE_DEPLOY }}@github.com/wooferzfg/LiveSplitOne.git

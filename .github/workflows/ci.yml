@@ -16,10 +16,24 @@ jobs:
     - name: Checkout Commit
       uses: actions/checkout@v1
 
-    - name: Use Node 12
+    - name: Cache Cargo
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo
+        key: ${{ runner.os }}-node-${{ hashFiles('livesplit-core/Cargo.lock') }}
+
+    - name: Install Node
       uses: actions/setup-node@v1
       with:
         node-version: '12.x'
+
+    - name: Install Rust
+      uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: 'nightly'
+
+    - name: Install Target
+      run: rustup target add wasm32-unknown-unknown
 
     - name: Install Dependencies
       run: |

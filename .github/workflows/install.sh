@@ -1,13 +1,13 @@
 set -ex
 
 main() {
-    curl -sSf https://build.travis-ci.org/files/rustup-init.sh | sh -s -- --default-toolchain=nightly -y
-    export PATH=$HOME/.cargo/bin:$PATH
-
     local target=
-    if [ $TRAVIS_OS_NAME = linux ]; then
+    if [ "$OS_NAME" = "ubuntu-latest" ]; then
         target=x86_64-unknown-linux-musl
         sort=sort
+    else
+        target=x86_64-apple-darwin
+        sort=gsort
     fi
 
     cd $HOME
@@ -15,8 +15,6 @@ main() {
     cd binaryen
     cmake .
     make wasm-opt
-
-    rustup target install $TARGET
 
     cargo install -f wasm-gc
     cargo install -f wasm-bindgen-cli

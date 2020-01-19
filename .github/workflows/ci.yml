@@ -61,7 +61,7 @@ jobs:
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
-        git checkout -b gh-pages --no-track
+        git checkout -b gh-pages
         mv dist/* .
         git add :/
         git commit -m "GitHub Pages build"

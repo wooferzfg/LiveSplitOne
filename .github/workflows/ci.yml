@@ -20,7 +20,19 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/.cargo
-        key: ${{ runner.os }}-node-${{ hashFiles('livesplit-core/Cargo.lock') }}
+        key: ${{ runner.os }}-cargo-${{ hashFiles('livesplit-core/Cargo.toml') }}
+    
+    - name: Cache binaryen
+      uses: actions/cache@v1
+      with:
+        path: ~/binaryen
+        key: ${{ runner.os }}-binaryen
+    
+    - name: Cache Target
+      uses: actions/cache@v1
+      with:
+        path: livesplit-core/target
+        key: ${{ runner.os }}-target
 
     - name: Install Node
       uses: actions/setup-node@v1

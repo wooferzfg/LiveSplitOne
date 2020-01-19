@@ -60,7 +60,7 @@ jobs:
       run: bash .github/workflows/build.sh
 
     - name: Deploy application
-      if: github.repository == "LiveSplit/LiveSplitOne" && github.ref == 'refs/heads/master'
+      if: github.repository == 'LiveSplit/LiveSplitOne' && github.ref == 'refs/heads/master'
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"

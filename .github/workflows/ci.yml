@@ -58,7 +58,7 @@ jobs:
       run: bash .github/workflows/build.sh
 
     - name: Commit deployment files
-      if: github.repository == 'LiveSplit/LiveSplitOne' && github.ref == 'refs/heads/master'
+      #if: github.repository == 'LiveSplit/LiveSplitOne' && github.ref == 'refs/heads/master'
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
@@ -68,7 +68,7 @@ jobs:
         git commit -m "GitHub Pages build"
     
     - name: Deploy application
-      if: github.repository == 'LiveSplit/LiveSplitOne' && github.ref == 'refs/heads/master'
+      #if: github.repository == 'LiveSplit/LiveSplitOne' && github.ref == 'refs/heads/master'
       uses: ad-m/github-push-action@master
       with:
         branch: 'gh-pages'

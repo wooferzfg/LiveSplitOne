@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Add read permissions for Cargo
-      run: chmod -R a+r $HOME/.cargo
+      run: chmod -R a+r ~/.cargo
 
     - name: Cache Cargo
       uses: actions/cache@v1

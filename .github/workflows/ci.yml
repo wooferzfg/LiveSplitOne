@@ -16,11 +16,14 @@ jobs:
     - name: Checkout Commit
       uses: actions/checkout@v1
 
+    - name: Add read permissions for Cargo
+      run: chmod -R a+r $HOME/.cargo
+
     - name: Cache Cargo
       uses: actions/cache@v1
       with:
         path: ~/.cargo
-        key: ${{ runner.os }}-cargo-${{ hashFiles('livesplit-core/Cargo.toml') }}
+        key: ${{ runner.os }}-cargo
     
     - name: Cache binaryen
       uses: actions/cache@v1

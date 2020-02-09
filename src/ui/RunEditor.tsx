@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ContextMenu, ContextMenuTrigger, MenuItem } from "react-contextmenu";
 import * as LiveSplit from "../livesplit-core";
-import { openFileAsArrayBuffer } from "../util/FileUtil";
+import FileUtil from "../util/FileUtil";
 import { TextBox } from "./TextBox";
 import { toast } from "react-toastify";
 import {
@@ -1377,7 +1377,7 @@ export class RunEditor extends React.Component<Props, State> {
     }
 
     private async importComparison() {
-        const [data, file] = await openFileAsArrayBuffer();
+        const [data, file] = await FileUtil.openFileAsArrayBuffer();
         const result = LiveSplit.Run.parseArray(new Int8Array(data), "", false);
         if (!result.parsedSuccessfully()) {
             toast.error("Couldn't parse the splits.");
@@ -1428,7 +1428,7 @@ export class RunEditor extends React.Component<Props, State> {
 
     private async changeSegmentIcon(index: number) {
         this.props.editor.selectOnly(index);
-        const [file] = await openFileAsArrayBuffer();
+        const [file] = await FileUtil.openFileAsArrayBuffer();
         this.props.editor.activeSetIconFromArray(new Int8Array(file));
         this.update();
     }
@@ -1460,7 +1460,7 @@ export class RunEditor extends React.Component<Props, State> {
     }
 
     private async changeGameIcon() {
-        const [file] = await openFileAsArrayBuffer();
+        const [file] = await FileUtil.openFileAsArrayBuffer();
         this.props.editor.setGameIconFromArray(new Int8Array(file));
         this.update();
     }

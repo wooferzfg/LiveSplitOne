@@ -1,78 +1,91 @@
 import { Option } from "./OptionUtil";
 
-// Workaround for Chrome sometimes garbage collecting the input element while it
-// is being used, preventing the onchange event from triggering.
-// @ts-ignore
-let fileInputElement = null;
+export default class FileUtil {
+    public static setFileInputElement(element: HTMLInputElement | null) {
+        this.fileInputElement = element;
+    }
 
-function openFile(): Promise<File> {
-    return new Promise((resolve, reject) => {
-        const input = document.createElement("input");
-        input.setAttribute("type", "file");
-        input.onchange = () => {
-            const file: Option<File> = input.files?.[0];
-            if (file === undefined) {
-                reject();
-                return;
-            }
-            resolve(file);
-        };
-        input.click();
-        fileInputElement = input;
-    });
-}
+    public static setFileOutputElement(element: HTMLAnchorElement | null) {
+        this.fileOutputElement = element;
+    }
 
-export async function convertFileToArrayBuffer(file: File): Promise<[ArrayBuffer, File]> {
-    return new Promise((resolve: (_: [ArrayBuffer, File]) => void) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const contents = reader.result as Option<ArrayBuffer>;
-            if (contents != null) {
-                resolve([contents, file]);
-            }
-        };
-        reader.readAsArrayBuffer(file);
-    });
-}
+    public static async convertFileToArrayBuffer(file: File): Promise<[ArrayBuffer, File]> {
+        return new Promise((resolve: (_: [ArrayBuffer, File]) => void) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const contents = reader.result as Option<ArrayBuffer>;
+                if (contents != null) {
+                    resolve([contents, file]);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    }
 
-export async function openFileAsArrayBuffer(): Promise<[ArrayBuffer, File]> {
-    const file = await openFile();
-    return convertFileToArrayBuffer(file);
-}
+    public static async openFileAsArrayBuffer(): Promise<[ArrayBuffer, File]> {
+        const file = await this.openFile();
+        return this.convertFileToArrayBuffer(file);
+    }
 
-export async function convertFileToString(file: File): Promise<[string, File]> {
-    return new Promise((resolve: (_: [string, File]) => void) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const contents = reader.result as Option<string>;
-            if (contents != null) {
-                resolve([contents, file]);
-            }
-        };
-        reader.readAsText(file);
-    });
-}
+    public static async convertFileToString(file: File): Promise<[string, File]> {
+        return new Promise((resolve: (_: [string, File]) => void) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const contents = reader.result as Option<string>;
+                if (contents != null) {
+                    resolve([contents, file]);
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
 
-export async function openFileAsString(): Promise<[string, File]> {
-    const file = await openFile();
-    return convertFileToString(file);
-}
+    public static async openFileAsString(): Promise<[string, File]> {
+        const file = await this.openFile();
+        return this.convertFileToString(file);
+    }
 
-export function exportFile(filename: string, data: any) {
-    const url = URL.createObjectURL(new Blob([data], { type: "application/octet-stream" }));
-    try {
-        const element = document.createElement("a");
-        element.setAttribute("href", url);
-        element.setAttribute("download", filename);
-
-        element.style.display = "none";
-        document.body.appendChild(element);
-        try {
-            element.click();
-        } finally {
-            document.body.removeChild(element);
+    public static exportFile(filename: string, data: any) {
+        if (!this.fileOutputElement) {
+            throw Error("File input element cannot be null!");
         }
-    } finally {
-        URL.revokeObjectURL(url);
+
+        const url = URL.createObjectURL(new Blob([data], { type: "application/octet-stream" }));
+        try {
+            this.fileOutputElement.setAttribute("href", url);
+            this.fileOutputElement.setAttribute("download", filename);
+
+            this.fileOutputElement.style.display = "none";
+            this.fileOutputElement.click();
+        } finally {
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    private static fileInputElement: HTMLInputElement | null = null;
+    private static fileOutputElement: HTMLAnchorElement | null = null;
+
+    private static openFile(): Promise<File> {
+        return new Promise((resolve, reject) => {
+            if (!this.fileInputElement) {
+                throw Error("File input element cannot be null!");
+            }
+
+            this.fileInputElement.setAttribute("type", "file");
+            this.fileInputElement.onchange = () => {
+                if (!this.fileInputElement) {
+                    throw Error("File input element cannot be null!");
+                }
+
+                const file: Option<File> = this.fileInputElement.files?.[0];
+                this.fileInputElement.onchange = null;
+                if (file === undefined) {
+                    reject();
+                    return;
+                }
+                resolve(file);
+            };
+            this.fileInputElement.click();
+        });
     }
 }

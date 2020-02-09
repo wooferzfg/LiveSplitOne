@@ -7,7 +7,7 @@ import {
     Segment, SharedTimer, Timer, TimerPhase, TimingMethod,
     TimeSpan, TimerRef, TimerRefMut, HotkeyConfig,
 } from "../livesplit-core";
-import { convertFileToArrayBuffer, convertFileToString, exportFile, openFileAsArrayBuffer, openFileAsString } from "../util/FileUtil";
+import FileUtil from "../util/FileUtil";
 import { Option, assertNull, expect, maybeDisposeAndThen, panic } from "../util/OptionUtil";
 import * as SplitsIO from "../util/SplitsIO";
 import { LayoutEditor as LayoutEditorComponent } from "./LayoutEditor";
@@ -57,6 +57,8 @@ export class LiveSplit extends React.Component<{}, State> {
     private rightClickEvent: Option<EventListenerObject>;
     private resizeEvent: Option<EventListenerObject>;
     private connection: Option<WebSocket>;
+    private fileInputElement: React.RefObject<HTMLInputElement>;
+    private fileOutputElement: React.RefObject<HTMLAnchorElement>;
 
     constructor(props: {}) {
         super(props);
@@ -134,6 +136,8 @@ export class LiveSplit extends React.Component<{}, State> {
         this.mediaQueryChanged = this.mediaQueryChanged.bind(this);
 
         this.containerRef = React.createRef();
+        this.fileInputElement = React.createRef();
+        this.fileOutputElement = React.createRef();
     }
 
     public componentDidMount() {
@@ -160,6 +164,9 @@ export class LiveSplit extends React.Component<{}, State> {
         }
 
         this.handleAutomaticResize();
+
+        FileUtil.setFileInputElement(this.fileInputElement.current);
+        FileUtil.setFileOutputElement(this.fileOutputElement.current);
     }
 
     public componentWillUnmount() {
@@ -261,31 +268,35 @@ export class LiveSplit extends React.Component<{}, State> {
         const viewContainerClassName = `view-container ${routeClassMap[this.state.menu.kind]}`;
 
         return (
-            <Sidebar
-                sidebar={sidebarContent}
-                docked={this.state.isDesktop}
-                open={this.state.sidebarOpen}
-                transitions={this.state.sidebarTransitionsEnabled}
-                onSetOpen={((e: boolean) => this.onSetSidebarOpen(e)) as any}
-                sidebarClassName="sidebar"
-                contentClassName={contentClassName}
-                overlayClassName="sidebar-overlay"
-            >
-                {
-                    !this.state.isDesktop &&
-                    !this.state.sidebarOpen &&
-                    <button
-                        className="sidebar-button fa fa-bars"
-                        onClick={((e: boolean) => this.onSetSidebarOpen(e)) as any}
-                    />
-                }
-                <div
-                    className={viewContainerClassName}
-                    ref={this.containerRef}
+            <>
+                <input id="file-input" type="file" ref={this.fileInputElement} />
+                <a id="file-output" ref={this.fileOutputElement} />
+                <Sidebar
+                    sidebar={sidebarContent}
+                    docked={this.state.isDesktop}
+                    open={this.state.sidebarOpen}
+                    transitions={this.state.sidebarTransitionsEnabled}
+                    onSetOpen={((e: boolean) => this.onSetSidebarOpen(e)) as any}
+                    sidebarClassName="sidebar"
+                    contentClassName={contentClassName}
+                    overlayClassName="sidebar-overlay"
                 >
-                    {content}
-                </div>
-            </Sidebar>
+                    {
+                        !this.state.isDesktop &&
+                        !this.state.sidebarOpen &&
+                        <button
+                            className="sidebar-button fa fa-bars"
+                            onClick={((e: boolean) => this.onSetSidebarOpen(e)) as any}
+                        />
+                    }
+                    <div
+                        className={viewContainerClassName}
+                        ref={this.containerRef}
+                    >
+                        {content}
+                    </div>
+                </Sidebar>
+            </>
         );
     }
 
@@ -308,7 +319,7 @@ export class LiveSplit extends React.Component<{}, State> {
     }
 
     public async importSplits() {
-        const splits = await openFileAsArrayBuffer();
+        const splits = await FileUtil.openFileAsArrayBuffer();
         try {
             this.importSplitsFromArrayBuffer(splits);
         } catch (err) {
@@ -317,7 +328,7 @@ export class LiveSplit extends React.Component<{}, State> {
     }
 
     public async importSplitsFromFile(file: File) {
-        const splits = await convertFileToArrayBuffer(file);
+        const splits = await FileUtil.convertFileToArrayBuffer(file);
         this.importSplitsFromArrayBuffer(splits);
     }
 
@@ -364,7 +375,7 @@ export class LiveSplit extends React.Component<{}, State> {
             return [lss, name];
         });
         try {
-            exportFile(name + ".lss", lss);
+            FileUtil.exportFile(name + ".lss", lss);
         } catch (_) {
             toast.error("Failed to export the splits.");
         }
@@ -393,7 +404,7 @@ export class LiveSplit extends React.Component<{}, State> {
     }
 
     public async importLayout() {
-        const [file] = await openFileAsString();
+        const [file] = await FileUtil.openFileAsString();
         try {
             this.importLayoutFromString(file);
         } catch (err) {
@@ -402,13 +413,13 @@ export class LiveSplit extends React.Component<{}, State> {
     }
 
     public async importLayoutFromFile(file: File) {
-        const [fileString] = await convertFileToString(file);
+        const [fileString] = await FileUtil.convertFileToString(file);
         this.importLayoutFromString(fileString);
     }
 
     public exportLayout() {
         const layout = this.state.layout.settingsAsJson();
-        exportFile("layout.ls1l", JSON.stringify(layout, null, 4));
+        FileUtil.exportFile("layout.ls1l", JSON.stringify(layout, null, 4));
     }
 
     public loadDefaultSplits() {

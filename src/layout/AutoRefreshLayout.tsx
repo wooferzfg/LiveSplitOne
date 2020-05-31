@@ -15,9 +15,12 @@ export interface State {
 }
 
 export default class AutoRefreshLayout extends React.Component<Props, State> {
+    private refreshes: number;
+
     constructor(props: Props) {
         super(props);
 
+        this.refreshes = 0;
         this.state = {
             layoutState: this.props.getState(),
         };
@@ -30,6 +33,10 @@ export default class AutoRefreshLayout extends React.Component<Props, State> {
     }
 
     public render() {
+        if (this.refreshes <= 0) {
+            window.performance.mark('LayoutStart');
+            this.refreshes = 50;
+        }
         return (
             <AutoRefresh update={() => this.refreshLayout()} >
                 <Layout
@@ -40,5 +47,18 @@ export default class AutoRefreshLayout extends React.Component<Props, State> {
                 />
             </AutoRefresh>
         );
+    }
+
+    public componentDidUpdate() {
+        this.refreshes -= 1;
+        if (this.refreshes > 0) {
+            this.refreshLayout();
+        } else {
+            window.performance.mark('LayoutEnd');
+            window.performance.measure('Layout', 'LayoutStart', 'LayoutEnd');
+            console.log(performance.getEntriesByType("measure")[0].duration);
+            performance.clearMarks();
+            performance.clearMeasures();
+        }
     }
 }
